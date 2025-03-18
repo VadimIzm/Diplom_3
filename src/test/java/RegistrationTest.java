@@ -1,6 +1,7 @@
 import io.restassured.response.Response;
 import ru.project.NewUser;
 import ru.project.Token;
+import ru.project.pageobject.Login;
 import ru.project.pageobject.Registration;
 import org.openqa.selenium.WebDriver;
 import org.junit.Before;
@@ -9,10 +10,6 @@ import ru.project.UserMoves;
 import ru.project.UserApi;
 import org.junit.Test;
 import io.qameta.allure.junit4.DisplayName;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.By;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import org.junit.After;
 
@@ -44,13 +41,9 @@ public class RegistrationTest {
         userApi = new UserApi();
         registration.createUser(email, password, name); //формируем набор данных, вводим их в поля и жмем кнопку "Зарегестрироваться"
         Response response = userApi.loginUser(user);
-        response.then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .body("success", equalTo(true));
-        WebDriverWait wait = new WebDriverWait(driver, 5);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[text()='Войти']")));
+        userApi.checkLoginResponse(response);
+        Login login = new Login(driver);
+        assertEquals("ExitFailed", "Войти", login.checkLoginButton());
         accessToken = Token.receivingToken(user);
     }
 
@@ -58,8 +51,6 @@ public class RegistrationTest {
     @DisplayName("Вывод ошибки при вводе некорректного пароля")
     public void checkErrorMassageTest() {
         registration.createUser(email, "12345", name);
-        WebDriverWait wait = new WebDriverWait(driver, 5);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(text(), 'Некорректный пароль')]")));
         String actualErrorMessage = registration.getTextErrorMessage();
         assertEquals("Текст сообщения об ошибке не соответствует ожидаемому", "Некорректный пароль", actualErrorMessage);
     }

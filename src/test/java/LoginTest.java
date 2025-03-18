@@ -9,7 +9,6 @@ import ru.project.pageobject.Login;
 import ru.project.pageobject.Main;
 import ru.project.pageobject.PasswordRecovery;
 import ru.project.pageobject.Registration;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
 public class LoginTest {
@@ -21,18 +20,19 @@ public class LoginTest {
     private String name;
     String accessToken;
     UserApi userApi;
-    NewUser user;
+    NewUser user, newUser;
 
     @Before
     public void before() {
+        userApi = new UserApi();
         driver = MakeWebDriver.createWebDriver();
         UserMoves userMoves = new UserMoves();
         email = userMoves.getRandomEmail();
         password = userMoves.getRandomPassword();
         name = userMoves.getRandomName();
         objRegistration = new Registration(driver);
-        objRegistration.openRegisterPage();
-        objRegistration.createUser(email,password,name);
+        newUser = objRegistration.createEmptyUser(email, password, name);
+        userApi.createUser(newUser);
     }
 
     @Test
@@ -46,13 +46,8 @@ public class LoginTest {
         user = new NewUser(email, password, name);
         userApi = new UserApi();
         Response response = userApi.loginUser(user);
-        response.then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .body("success", equalTo(true));
+        userApi.checkLoginResponse(response);
         assertEquals("Ошибка", "Оформить заказ", objMain.checkOrderButton());
-        accessToken = Token.receivingToken(user);
     }
     @Test
     @DisplayName("Проверка входа через кнопку «Личный кабинет»")
@@ -65,13 +60,8 @@ public class LoginTest {
         user = new NewUser(email, password, name);
         userApi = new UserApi();
         Response response = userApi.loginUser(user);
-        response.then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .body("success", equalTo(true));
+        userApi.checkLoginResponse(response);
         assertEquals("Ошибка", "Оформить заказ", objMain.checkOrderButton());
-        accessToken = Token.receivingToken(user);
     }
 
     @Test
@@ -85,13 +75,8 @@ public class LoginTest {
         user = new NewUser(email, password, name);
         userApi = new UserApi();
         Response response = userApi.loginUser(user);
-        response.then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .body("success", equalTo(true));
+        userApi.checkLoginResponse(response);
         assertEquals("Ошибка", "Оформить заказ", objMain.checkOrderButton());
-        accessToken = Token.receivingToken(user);
     }
 
     @Test
@@ -106,16 +91,12 @@ public class LoginTest {
         user = new NewUser(email, password, name);
         userApi = new UserApi();
         Response response = userApi.loginUser(user);
-        response.then()
-                .assertThat()
-                .statusCode(200)
-                .and()
-                .body("success", equalTo(true));
+        userApi.checkLoginResponse(response);
         assertEquals("Ошибка", "Оформить заказ", objMain.checkOrderButton());
-        accessToken = Token.receivingToken(user);
     }
     @After
     public void teardown() {
+        accessToken = Token.receivingToken(user);
         if (accessToken != null) {
             UserMoves.deleteUser(accessToken);
         }

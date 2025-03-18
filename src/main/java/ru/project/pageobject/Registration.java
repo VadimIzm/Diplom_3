@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import ru.project.NewUser;
 
 public class Registration {
 
@@ -24,7 +25,12 @@ public class Registration {
         driver.get("https://stellarburgers.nomoreparties.site/register");
     }
 
-    @Step("Создать пользователя")
+    @Step("Создать пустого пользователя")
+    public NewUser createEmptyUser(String email, String password, String name) {
+        return new NewUser(email, password, name);
+    }
+
+    @Step("Создать пользователя через UI")
     public void createUser(String email, String password, String name) {
         driver.findElement(nameField).clear();
         driver.findElement(nameField).sendKeys(name);

@@ -1,41 +1,45 @@
-import ru.project.NewUser;
-import ru.project.Token;
+import ru.project.*;
 import ru.project.pageobject.Login;
 import ru.project.pageobject.Main;
 import org.openqa.selenium.WebDriver;
 import org.junit.Before;
-import ru.project.UserMoves;
 import ru.project.pageobject.Registration;
 import org.junit.Test;
 import io.qameta.allure.junit4.DisplayName;
 import ru.project.pageobject.Account;
 import static org.junit.Assert.assertEquals;
 import org.junit.After;
-import ru.project.MakeWebDriver;
 
 
 public class AccountTest {
     private Login objLogin;
     private Main objMain;
+    private Registration objRegistration;
     private WebDriver driver;
     String accessToken;
     NewUser user;
+    UserApi userApi;
 
     @Before
     public void before() {
+        userApi = new UserApi();
+        objRegistration = new Registration(driver);
         driver = MakeWebDriver.createWebDriver();
         UserMoves userMoves = new UserMoves();
         String email = userMoves.getRandomEmail();
         String password = userMoves.getRandomPassword();
         String name = userMoves.getRandomName();
-        Registration objRegistration = new Registration(driver);
-        objRegistration.openRegisterPage();
-        objRegistration.createUser(email, password, name);
-        objLogin = new Login(driver);
+
+        user = objRegistration.createEmptyUser(email, password, name);
+        userApi.createUser(user);
+
         objMain = new Main(driver);
+        objMain.openStartPage();
+        objMain.checkAuthorization();
+
+        objLogin = new Login(driver);
         objLogin.login(email, password); //тут выбрасывает на главную
         objMain.checkPersonalArea();
-        user = new NewUser(email, password, name);
         accessToken = Token.receivingToken(user);
     }
 
